@@ -2,7 +2,7 @@
 we need to make this component client rendered as well*/
 'use client';
 
-import { useLocationUser } from '@/contexts';
+import type { Location } from '@/models/LocationDetails';
 import type { RestaurantInfoResponse } from '@/models/api/restaurantsInfoResponse';
 //Map component Component from library
 import { GoogleMap, Marker, OverlayView } from '@react-google-maps/api';
@@ -37,18 +37,13 @@ const defaultMapOptions: google.maps.MapOptions = {
   streetViewControl: false,
 };
 
-export const MapComponent = ({ restaurants }: { restaurants: RestaurantInfoResponse[] }) => {
-  return (
-    <div className="w-full max-w-6xl max-h-8/12">
-      <CustomMap>
-        <CustomMarkers restaurants={restaurants} />
-      </CustomMap>
-    </div>
-  );
-};
-
-const CustomMap = memo(({ children }: { children: React.ReactNode }) => {
-  const { selectedLocation } = useLocationUser();
+export const MapComponent = ({
+  restaurants,
+  selectedLocation,
+}: {
+  restaurants: RestaurantInfoResponse[];
+  selectedLocation?: Location;
+}) => {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -69,30 +64,36 @@ const CustomMap = memo(({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <GoogleMap
-      mapContainerStyle={defaultMapContainerStyle}
-      center={mapCenter}
-      zoom={defaultMapZoom}
-      onLoad={onLoad}
-      onUnmount={onUnmount}
-      options={defaultMapOptions}>
-      {children}
-    </GoogleMap>
+    <div className="w-full max-w-6xl max-h-8/12">
+      <GoogleMap
+        mapContainerStyle={defaultMapContainerStyle}
+        center={mapCenter}
+        zoom={defaultMapZoom}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        options={defaultMapOptions}>
+        <CustomMarkers restaurants={restaurants} selectedLocation={selectedLocation} />
+      </GoogleMap>
+    </div>
   );
-});
+};
 
-CustomMap.displayName = 'CustomMap';
+const CustomMarkers = memo(
+  ({
+    restaurants,
+    selectedLocation,
+  }: {
+    restaurants: RestaurantInfoResponse[];
+    selectedLocation?: Location;
+  }) => {
+    const [hoveredRestaurant, setHoveredRestaurant] = useState<RestaurantInfoResponse>();
 
-const CustomMarkers = memo(({ restaurants }: { restaurants: RestaurantInfoResponse[] }) => {
-  const { selectedLocation } = useLocationUser();
-  const [hoveredRestaurant, setHoveredRestaurant] = useState<RestaurantInfoResponse>();
+    if (!selectedLocation) {
+      return <div>Loading...</div>;
+    }
 
-  if (!selectedLocation) {
-    return <div>Loading...</div>;
-  }
-
-  const createRestaurantPinSVG = () => {
-    const svgString = `
+    const createRestaurantPinSVG = () => {
+      const svgString = `
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
         <!-- Pin shape -->
         <path
@@ -111,71 +112,72 @@ const CustomMarkers = memo(({ restaurants }: { restaurants: RestaurantInfoRespon
       </svg>
     `;
 
-    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgString);
-  };
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgString);
+    };
 
-  const restaurantPinIcon = {
-    url: createRestaurantPinSVG(),
-    scaledSize: new window.google.maps.Size(40, 50),
-    origin: new window.google.maps.Point(0, 0),
-    anchor: new window.google.maps.Point(20, 38), // Bottom center of the pin
-  };
+    const restaurantPinIcon = {
+      url: createRestaurantPinSVG(),
+      scaledSize: new window.google.maps.Size(40, 50),
+      origin: new window.google.maps.Point(0, 0),
+      anchor: new window.google.maps.Point(20, 38), // Bottom center of the pin
+    };
 
-  return (
-    <>
-      <Marker position={{ lat: selectedLocation.latitude, lng: selectedLocation.longitude }} />
-      {restaurants.map(
-        (restaurant) =>
-          restaurant.location && (
-            <div key={restaurant.name}>
-              <Marker
-                position={{
-                  lat: restaurant.location.latitude,
-                  lng: restaurant.location.longitude,
-                }}
-                icon={restaurantPinIcon}
-                onClick={() => {
-                  window.open(restaurant.detailsLink, '_blank');
-                }}
-                onMouseOver={() => {
-                  setHoveredRestaurant(restaurant);
-                }}
-                onMouseOut={() => setHoveredRestaurant(undefined)}
-              />
-              {/* Toast/Tooltip overlay */}
-              {hoveredRestaurant?.name === restaurant.name && (
-                <OverlayView
+    return (
+      <>
+        <Marker position={{ lat: selectedLocation.latitude, lng: selectedLocation.longitude }} />
+        {restaurants.map(
+          (restaurant) =>
+            restaurant.location && (
+              <div key={restaurant.name}>
+                <Marker
                   position={{
                     lat: restaurant.location.latitude,
                     lng: restaurant.location.longitude,
                   }}
-                  mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-                  getPixelPositionOffset={(width, height) => ({
-                    x: -width / 2,
-                    y: -height - 45, // Position above the marker
-                  })}>
-                  <div className="animate-fade-in restaurant-toast bg-white/65 backdrop-blur-lg rounded-lg shadow-lg p-3 w-64">
-                    <div className="flex flex-col">
-                      <Image
-                        src={restaurant.image ?? ''}
-                        alt={restaurant.name}
-                        width={100}
-                        height={100}
-                        className="w-full h-24 rounded object-cover mr-3"
-                      />
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900">{restaurant.name}</h3>
+                  icon={restaurantPinIcon}
+                  onClick={() => {
+                    window.open(restaurant.detailsLink, '_blank');
+                  }}
+                  onMouseOver={() => {
+                    setHoveredRestaurant(restaurant);
+                  }}
+                  onMouseOut={() => setHoveredRestaurant(undefined)}
+                />
+                {/* Toast/Tooltip overlay */}
+                {hoveredRestaurant?.name === restaurant.name && (
+                  <OverlayView
+                    position={{
+                      lat: restaurant.location.latitude,
+                      lng: restaurant.location.longitude,
+                    }}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    getPixelPositionOffset={(width, height) => ({
+                      x: -width / 2,
+                      y: -height - 45, // Position above the marker
+                    })}>
+                    <div className="animate-fade-in restaurant-toast bg-white/65 backdrop-blur-lg rounded-lg shadow-lg p-3 w-64">
+                      <div className="flex flex-col">
+                        <Image
+                          src={restaurant.image ?? ''}
+                          alt={restaurant.name}
+                          width={100}
+                          height={100}
+                          className="w-full h-24 rounded object-cover mr-3"
+                        />
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{restaurant.name}</h3>
+                        </div>
                       </div>
+                      <p className="text-xs text-gray-500 mt-2">{restaurant.address}</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">{restaurant.address}</p>
-                  </div>
-                </OverlayView>
-              )}
-            </div>
-          )
-      )}
-    </>
-  );
-});
+                  </OverlayView>
+                )}
+              </div>
+            )
+        )}
+      </>
+    );
+  }
+);
 
 CustomMarkers.displayName = 'CustomMarkers';

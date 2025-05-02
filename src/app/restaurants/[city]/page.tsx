@@ -142,7 +142,9 @@ export default function RestaurantsByCityPage() {
             </button>
           </div>
           {viewType === 'list' && <Gallery restaurants={restaurants} />}
-          {viewType === 'map' && <MapComponent restaurants={restaurants} />}
+          {viewType === 'map' && (
+            <MapComponent restaurants={restaurants} selectedLocation={selectedLocation} />
+          )}
         </div>
       )}
     </NavigationLayout>
