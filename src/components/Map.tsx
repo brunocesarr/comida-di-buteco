@@ -48,7 +48,7 @@ export const MapComponent = ({ restaurants }: { restaurants: RestaurantInfoRespo
 };
 
 const CustomMap = memo(({ children }: { children: React.ReactNode }) => {
-  const { currentLocation } = useLocationUser();
+  const { selectedLocation } = useLocationUser();
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -59,13 +59,13 @@ const CustomMap = memo(({ children }: { children: React.ReactNode }) => {
     mapRef.current = null;
   }, []);
 
-  if (!currentLocation) {
+  if (!selectedLocation) {
     return <div>Loading...</div>;
   }
 
   const mapCenter = {
-    lat: currentLocation?.latitude ?? 0,
-    lng: currentLocation?.longitude ?? 0,
+    lat: selectedLocation?.latitude ?? 0,
+    lng: selectedLocation?.longitude ?? 0,
   };
 
   return (
@@ -84,10 +84,10 @@ const CustomMap = memo(({ children }: { children: React.ReactNode }) => {
 CustomMap.displayName = 'CustomMap';
 
 const CustomMarkers = memo(({ restaurants }: { restaurants: RestaurantInfoResponse[] }) => {
-  const { currentLocation } = useLocationUser();
+  const { selectedLocation } = useLocationUser();
   const [hoveredRestaurant, setHoveredRestaurant] = useState<RestaurantInfoResponse>();
 
-  if (!currentLocation) {
+  if (!selectedLocation) {
     return <div>Loading...</div>;
   }
 
@@ -123,7 +123,7 @@ const CustomMarkers = memo(({ restaurants }: { restaurants: RestaurantInfoRespon
 
   return (
     <>
-      <Marker position={{ lat: currentLocation.latitude, lng: currentLocation.longitude }} />
+      <Marker position={{ lat: selectedLocation.latitude, lng: selectedLocation.longitude }} />
       {restaurants.map(
         (restaurant) =>
           restaurant.location && (

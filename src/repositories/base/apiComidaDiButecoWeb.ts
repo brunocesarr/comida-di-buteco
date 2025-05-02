@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 
-const URL_BASE_COMIDA_DI_BUTECO = 'https://comidadibuteco.com.br/butecos';
+const URL_BASE_COMIDA_DI_BUTECO = process.env.NEXT_URL_BASE_COMIDA_DI_BUTECO;
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0';
 
