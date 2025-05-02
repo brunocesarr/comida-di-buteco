@@ -26,12 +26,14 @@ export default function Restaurants() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'address' | 'city'>('address');
   const [input, setInput] = useState<LocationDetails>();
+  const [addressTerm, setAddressTerm] = useState('');
   const inputRef = useRef(null);
 
   const handlePlaceChanged = useCallback(async (address: google.maps.places.Autocomplete) => {
     const place = address.getPlace();
 
     if (!place || !place.geometry) {
+      setAddressTerm('');
       setInput({});
       return;
     }
@@ -70,6 +72,7 @@ export default function Restaurants() {
     const latitude = data?.geometry?.location?.lat();
     const longitude = data?.geometry?.location?.lng();
 
+    setAddressTerm(formattedFullAddress ?? formattedAddress);
     setInput((values) => ({
       ...values,
       streetAddress: formattedAddress,
@@ -96,6 +99,7 @@ export default function Restaurants() {
       }
     } else {
       inputRef.current = null;
+      setAddressTerm('');
       setInput({});
     }
   }, [isModalOpen, handlePlaceChanged]);
@@ -107,6 +111,7 @@ export default function Restaurants() {
 
   const closeModal = () => {
     setSelectedCity('');
+    setAddressTerm('');
     setIsModalOpen(false);
   };
 
@@ -121,12 +126,14 @@ export default function Restaurants() {
         return;
       }
       await getLocationDetailsByCity(city);
+      setSelectedCity(selectedCity);
       router.push(`/restaurants/${selectedCity}`);
     }
     handleConfirmAddressModalType();
   };
 
   const handleConfirmAddressModalType = () => {
+    closeModal();
     if (modalType === 'address' && input) {
       const { streetAddress, latitude, longitude, city } = input;
       const selectedCity = Constants.DEFAULT_CITIES_OPTIONS.find(
@@ -136,6 +143,8 @@ export default function Restaurants() {
         alert(
           'O endereco selecionado nao é uma cidade participante. Volte e tente novamente com outro endereco.'
         );
+        setInput({});
+        openModal('address');
         return;
       }
       if (!latitude || !longitude || !selectedCity) {
@@ -145,7 +154,7 @@ export default function Restaurants() {
       setSelectedLocation({ latitude, longitude });
       setSelectedCity(selectedCity);
       router.push(
-        `/restaurants/${selectedCity}${streetAddress ? `streetAddress=${streetAddress}` : ''}`
+        `/restaurants/${selectedCity}${streetAddress ? `?streetAddress=${streetAddress}` : ''}`
       );
     }
   };
@@ -162,6 +171,7 @@ export default function Restaurants() {
         alert('Nao foi possivel obter a sua localizacao. Tente novamente.');
         return;
       }
+      setAddressTerm(locationInfo.formattedFullAddress ?? locationInfo?.streetAddress ?? '');
       setInput((values) => ({
         ...values,
         streetAddress: locationInfo?.streetAddress,
@@ -190,8 +200,8 @@ export default function Restaurants() {
 
   return (
     <NavigationLayout>
-      <div className="flex flex-row flex-wrap items-stretch justify-center py-4 shadow-lg gap-8">
-        <div className="max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row flex-wrap md:items-stretch items-center justify-center py-4 shadow-lg gap-8">
+        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <div className="h-1/2 rounded-t-lg">
             <Image src={restaurantInMap} width={1024} height={1024} alt="Resturants in map" />
           </div>
@@ -213,7 +223,7 @@ export default function Restaurants() {
           </div>
         </div>
 
-        <div className="max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <div className="h-1/2 rounded-t-lg">
             <Image src={restaurantInStreet} width={1024} height={1024} alt="Resturants in map" />
           </div>
@@ -270,7 +280,13 @@ export default function Restaurants() {
                 id="address"
                 name="address"
                 ref={inputRef}
-                value={input?.formattedFullAddress}
+                value={addressTerm}
+                onChange={(e) => {
+                  if (e.target.value.length === 0) {
+                    setInput({});
+                  }
+                  setAddressTerm(e.target.value);
+                }}
                 placeholder="Pesquise um endereço"
                 className="py-2 w-full text-sm font-light text-start text-black bg-transparent border-0 border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
               />
@@ -281,6 +297,7 @@ export default function Restaurants() {
                 </span>
                 <button
                   type="button"
+                  disabled={input?.city?.length === 0}
                   onClick={onClickCurrentLocation}
                   className="min-w-10 min-h-10 inline-flex items-center justify-end-safe gap-2 p-2 font-light text-[0.9rem] text-center text-white bg-amber-500/95 rounded-lg hover:bg-amber-500/55 focus:ring-4 focus:outline-none focus:ring-amber-300 cursor-pointer">
                   <LocateFixed className="max-h-1/2" />

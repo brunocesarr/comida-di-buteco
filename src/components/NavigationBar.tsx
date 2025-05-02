@@ -11,8 +11,8 @@ export function NavigationBar() {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <header className="bg-black/75 max-h-32 w-[100vw] grid text-center items-center px-8 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white font-dmsansmd">
-      <nav className="flex justify-between items-center md:kflex">
+    <header className="bg-black/75 max-h-32 w-[100vw] grid text-center items-center px-8 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white">
+      <nav className="flex justify-between items-center md:flex">
         <div className="hidden d-flex justify-center items-center gap-4 lg:flex">
           <Link href="/">
             <Image
@@ -29,11 +29,9 @@ export function NavigationBar() {
           </ul>
         </div>
 
-        <details className="dropdown lg:hidden text-left text-white">
-          <summary className="btn m-1 bg-inherit border-none">
-            <i className="fa-solid fa-bars text-white text-lg"></i>
-          </summary>
-          <ul className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 px-4 flex flex-col gap-3 md:hidden">
+        <details className="dropdown lg:hidden text-left text-white mb-4">
+          <summary className="btn m-1 bg-inherit border-none"></summary>
+          <ul className="dropdown-content menu p-2 shadow bg-base-100 rounded-box max-w-64 px-4 flex flex-col gap-3 md:hidden bg-black/75">
             <ActiveLink path="/restaurants" title="Restaurantes" />
             <ActiveLink path="/about" title="Sobre" />
           </ul>
