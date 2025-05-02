@@ -43,13 +43,31 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
 
   useEffect(() => {
     if (isLocationEnabled && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(({ coords }: { coords: GeolocationCoordinates }) => {
-        const { latitude, longitude } = coords;
-        setCurrentLocation({ latitude, longitude });
-        if (!selectedLocation) {
-          setSelectedLocation({ latitude, longitude });
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }: { coords: GeolocationCoordinates }) => {
+          const { latitude, longitude } = coords;
+          setCurrentLocation({ latitude, longitude });
+          if (!selectedLocation) {
+            setSelectedLocation({ latitude, longitude });
+          }
+        },
+        (error) => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              console.error('User denied the request for geolocation');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              console.error('Location information is unavailable');
+              break;
+            case error.TIMEOUT:
+              console.error('The request to get user location timed out');
+              break;
+            default:
+              console.error('An unknown error occurred' + error.message);
+              break;
+          }
         }
-      });
+      );
     }
   }, [isLocationEnabled, selectedLocation]);
 
@@ -81,6 +99,22 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
                   const { latitude, longitude } = coords;
                   setCurrentLocation({ latitude, longitude });
                   setSelectedLocation({ latitude, longitude });
+                },
+                (error) => {
+                  switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                      console.error('User denied the request for geolocation');
+                      break;
+                    case error.POSITION_UNAVAILABLE:
+                      console.error('Location information is unavailable');
+                      break;
+                    case error.TIMEOUT:
+                      console.error('The request to get user location timed out');
+                      break;
+                    default:
+                      console.error('An unknown error occurred' + error.message);
+                      break;
+                  }
                 }
               );
             }}>
