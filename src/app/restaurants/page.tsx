@@ -21,6 +21,7 @@ export default function Restaurants() {
     setSelectedCity,
     handleLocationPermission,
     getLocationDetails,
+    getLocationDetailsByCity,
   } = useLocationUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'address' | 'city'>('address');
@@ -109,11 +110,23 @@ export default function Restaurants() {
     setIsModalOpen(false);
   };
 
-  const handleConfirmCityModal = () => {
+  const handleConfirmCityModal = async () => {
     setIsModalOpen(false);
     if (modalType === 'city' && selectedCity) {
+      const city = Constants.DEFAULT_CITIES_OPTIONS.find(
+        (option) => option.value === selectedCity
+      )?.label;
+      if (!city) {
+        alert('Cidade nao encontrada. Tente novamente.');
+        return;
+      }
+      await getLocationDetailsByCity(city);
       router.push(`/restaurants/${selectedCity}`);
     }
+    handleConfirmAddressModalType();
+  };
+
+  const handleConfirmAddressModalType = () => {
     if (modalType === 'address' && input) {
       const { streetAddress, latitude, longitude, city } = input;
       const selectedCity = Constants.DEFAULT_CITIES_OPTIONS.find(

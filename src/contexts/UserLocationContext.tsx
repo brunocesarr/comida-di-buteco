@@ -10,13 +10,12 @@ import {
   useState,
 } from 'react';
 import { useModal } from '@/contexts/ModalContext';
-import type { LocationDetails } from '@/models/LocationDetails';
-import { getLocationDetailsInfo } from '@/repositories/comidaDiButeco.respository';
-
-interface Location {
-  latitude: number;
-  longitude: number;
-}
+import type { LocationDetails, Location } from '@/models/LocationDetails';
+import {
+  getCurrentLocation,
+  getLocationDetailsInfo,
+  getLocationByCity,
+} from '@/repositories/comidaDiButeco.respository';
 
 interface UserLocationContextData {
   currentLocation?: Location;
@@ -26,6 +25,7 @@ interface UserLocationContextData {
   setSelectedCity: Dispatch<SetStateAction<string>>;
   handleLocationPermission: () => void;
   getLocationDetails: () => Promise<LocationDetails | undefined>;
+  getLocationDetailsByCity: (city: string) => Promise<void>;
 }
 
 export const UserLocationContext = createContext({} as UserLocationContextData);
@@ -51,7 +51,7 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
             setSelectedLocation({ latitude, longitude });
           }
         },
-        (error) => {
+        async (error) => {
           switch (error.code) {
             case error.PERMISSION_DENIED:
               console.error('User denied the request for geolocation');
@@ -65,6 +65,12 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
             default:
               console.error('An unknown error occurred' + error.message);
               break;
+          }
+
+          const { latitude, longitude } = await getCurrentLocation();
+          setCurrentLocation({ latitude, longitude });
+          if (!selectedLocation) {
+            setSelectedLocation({ latitude, longitude });
           }
         }
       );
@@ -100,7 +106,7 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
                   setCurrentLocation({ latitude, longitude });
                   setSelectedLocation({ latitude, longitude });
                 },
-                (error) => {
+                async (error) => {
                   switch (error.code) {
                     case error.PERMISSION_DENIED:
                       console.error('User denied the request for geolocation');
@@ -115,6 +121,12 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
                       console.error('An unknown error occurred' + error.message);
                       break;
                   }
+
+                  const { latitude, longitude } = await getCurrentLocation();
+                  setCurrentLocation({ latitude, longitude });
+                  if (!selectedLocation) {
+                    setSelectedLocation({ latitude, longitude });
+                  }
                 }
               );
             }}>
@@ -123,11 +135,35 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
         </div>
       );
     } else {
-      navigator.geolocation.getCurrentPosition(({ coords }: { coords: GeolocationCoordinates }) => {
-        const { latitude, longitude } = coords;
-        setCurrentLocation({ latitude, longitude });
-        setSelectedLocation({ latitude, longitude });
-      });
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }: { coords: GeolocationCoordinates }) => {
+          const { latitude, longitude } = coords;
+          setCurrentLocation({ latitude, longitude });
+          setSelectedLocation({ latitude, longitude });
+        },
+        async (error) => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              console.error('User denied the request for geolocation');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              console.error('Location information is unavailable');
+              break;
+            case error.TIMEOUT:
+              console.error('The request to get user location timed out');
+              break;
+            default:
+              console.error('An unknown error occurred' + error.message);
+              break;
+          }
+
+          const { latitude, longitude } = await getCurrentLocation();
+          setCurrentLocation({ latitude, longitude });
+          if (!selectedLocation) {
+            setSelectedLocation({ latitude, longitude });
+          }
+        }
+      );
     }
   };
 
@@ -137,6 +173,17 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
     }
     const { latitude, longitude } = currentLocation;
     return await getLocationDetailsInfo(latitude, longitude);
+  };
+
+  const getLocationDetailsByCity = async (city: string) => {
+    if (!city) {
+      return;
+    }
+    const { latitude, longitude } = await getLocationByCity(city);
+    if (!latitude || !longitude) {
+      return;
+    }
+    setSelectedLocation({ latitude, longitude });
   };
 
   return (
@@ -149,6 +196,7 @@ export const UserLocationProvider = ({ children }: UserLocationProviderProps) =>
         setSelectedCity,
         handleLocationPermission,
         getLocationDetails,
+        getLocationDetailsByCity,
       }}>
       {children}
     </UserLocationContext.Provider>

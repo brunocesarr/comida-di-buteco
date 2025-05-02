@@ -39,6 +39,36 @@ async function getLocationDetailsInfo(
   }
 }
 
+async function getCurrentLocation(): Promise<{ latitude: number; longitude: number }> {
+  try {
+    const { data: locationInfo } = await apiComidaDiButeco.get<{
+      latitude: number;
+      longitude: number;
+    }>('/api/comida-di-buteco/location-details/current');
+
+    return locationInfo;
+  } catch (error) {
+    console.error(`Error in API Comida Di Buteco. Erro message: ${(error as Error).message}`);
+    const errorMessage = `API Comida Di Buteco: ${(error as Error).message}`;
+    throw new Error(errorMessage);
+  }
+}
+
+async function getLocationByCity(city: string): Promise<{ latitude: number; longitude: number }> {
+  try {
+    const { data: locationInfo } = await apiComidaDiButeco.get<{
+      latitude: number;
+      longitude: number;
+    }>('/api/comida-di-buteco/location-details/' + city);
+
+    return locationInfo;
+  } catch (error) {
+    console.error(`Error in API Comida Di Buteco. Erro message: ${(error as Error).message}`);
+    const errorMessage = `API Comida Di Buteco: ${(error as Error).message}`;
+    throw new Error(errorMessage);
+  }
+}
+
 async function getRestaurantsInfoBySite(
   city: string = Constants.DEFAULT_CITY_URL_PARAM
 ): Promise<RestaurantInfoResponse[]> {
@@ -87,4 +117,10 @@ async function getRestaurantsInfoBySite(
   return restaurants;
 }
 
-export { getRestaurantsInfo, getRestaurantsInfoBySite, getLocationDetailsInfo };
+export {
+  getRestaurantsInfo,
+  getRestaurantsInfoBySite,
+  getLocationDetailsInfo,
+  getCurrentLocation,
+  getLocationByCity,
+};

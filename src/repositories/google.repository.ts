@@ -73,4 +73,22 @@ async function getLocationDetails(latitude: number, longitude: number): Promise<
   };
 }
 
-export { getRestaurantLocation, getRestaurantDistance, getLocationDetails };
+async function getLocationByCity(city: string): Promise<{ latitude: number; longitude: number }> {
+  const { data }: GeocodeResponse = await googleClient.geocode({
+    params: {
+      key: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? '',
+      address: city,
+    },
+  });
+
+  if (data.status !== 'OK' || data.error_message) {
+    throw 'Error fetching geocode data';
+  }
+
+  return {
+    latitude: data.results[0].geometry.location.lat,
+    longitude: data.results[0].geometry.location.lng,
+  };
+}
+
+export { getRestaurantLocation, getRestaurantDistance, getLocationDetails, getLocationByCity };

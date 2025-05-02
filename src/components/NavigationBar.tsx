@@ -11,7 +11,7 @@ export function NavigationBar() {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <header className="bg-black/75 h-[10vh] w-[100vw] grid text-center items-center px-8 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white font-dmsansmd">
+    <header className="bg-black/75 max-h-32 w-[100vw] grid text-center items-center px-8 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white font-dmsansmd">
       <nav className="flex justify-between items-center md:kflex">
         <div className="hidden d-flex justify-center items-center gap-4 lg:flex">
           <Link href="/">

@@ -8,3 +8,8 @@ export interface LocationDetails {
   latitude?: number; // Geographic coordinate
   longitude?: number; // Geographic coordinate
 }
+
+export interface Location {
+  latitude: number;
+  longitude: number;
+}
