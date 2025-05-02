@@ -23,9 +23,7 @@ export default function RestaurantsByCityPage() {
   const [viewType, setViewType] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
-    if (!selectedCity) {
-      router.push('/');
-    } else if (selectedCity !== params.city) {
+    if (selectedCity && selectedCity !== params.city) {
       router.replace(`/restaurants/${selectedCity}`);
     }
   }, [selectedCity, params.city, router]);
