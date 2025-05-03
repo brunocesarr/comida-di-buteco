@@ -7,18 +7,18 @@ import { ArrowRightCircleIcon } from 'lucide-react';
 export default function About() {
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4 rounded-lg max-w-8/12 bg-black/45 backdrop-blur-lg">
+      <div className="container mx-auto py-8 px-4 rounded-sm md:rounded-lg max-w-full md:max-w-8/12 bg-black/45 backdrop-blur-lg">
         <div className="mb-8">
           <h1 className="text-end text-5xl font-display justify-content-start">
             O Comida di Buteco
           </h1>
         </div>
-        <div className="flex flex-row items-center gap-6 divide-x divide-gray-100/20">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 max-sm:divide-y md:divide-x divide-gray-100/20">
           <Image
             width={700}
             height={700}
             src="https://comidadibuteco.com.br/wp-content/uploads/2022/03/historia6.jpg"
-            className="pr-4"
+            className="pb-4 md:pr-4"
             alt=""
             decoding="async"
           />

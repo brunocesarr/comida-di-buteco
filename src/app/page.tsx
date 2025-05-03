@@ -5,7 +5,7 @@ import NavigationLayout from '@/components/NavigationLayout';
 export default function Home() {
   return (
     <NavigationLayout>
-      <div className="container mx-auto px-8 rounded-2xl flex flex-col items-center justify-items-center justify-center sm:py-20 font-display max-w-5xl gap-y-8 bg-black/45 backdrop-blur-lg">
+      <div className="container mx-auto md:my-4 px-8 rounded-sm md:rounded-2xl flex flex-col items-center justify-items-center justify-center py-12 font-display max-w-5xl gap-y-8 bg-black/45 backdrop-blur-lg">
         <h1 className="text-5xl font-bold text-white">Comida Di Buteco</h1>
         <div className="w-full h-0.5 bg-gray-100/20" />
         <div className="section-text font-sans text-base flex flex-col gap-2 text-justify">

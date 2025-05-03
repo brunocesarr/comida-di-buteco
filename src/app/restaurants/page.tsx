@@ -15,7 +15,6 @@ import type { LocationDetails } from '@/models/LocationDetails';
 export default function Restaurants() {
   const router = useRouter();
   const {
-    selectedLocation,
     setSelectedLocation,
     selectedCity,
     setSelectedCity,
@@ -24,12 +23,13 @@ export default function Restaurants() {
     getLocationDetailsByCity,
   } = useLocationUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
   const [modalType, setModalType] = useState<'address' | 'city'>('address');
   const [input, setInput] = useState<LocationDetails>();
   const [addressTerm, setAddressTerm] = useState('');
   const inputRef = useRef(null);
 
-  const handlePlaceChanged = useCallback(async (address: google.maps.places.Autocomplete) => {
+  const handlePlaceChanged = useCallback((address: google.maps.places.Autocomplete) => {
     const place = address.getPlace();
 
     if (!place || !place.geometry) {
@@ -87,7 +87,15 @@ export default function Restaurants() {
   };
 
   useEffect(() => {
-    if (isModalOpen) {
+    if (!isModalOpen) {
+      inputRef.current = null;
+      setAddressTerm('');
+      setInput({});
+    }
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    if (isModalOpen && modalType === 'address') {
       const options = {
         componentRestrictions: { country: 'br' },
         fields: ['address_components', 'geometry'],
@@ -97,12 +105,8 @@ export default function Restaurants() {
         const autocomplete = new google.maps.places.Autocomplete(inputRef.current, options);
         autocomplete.addListener('place_changed', () => handlePlaceChanged(autocomplete));
       }
-    } else {
-      inputRef.current = null;
-      setAddressTerm('');
-      setInput({});
     }
-  }, [isModalOpen, handlePlaceChanged]);
+  }, [isModalOpen, modalType, handlePlaceChanged]);
 
   const openModal = (modalType: 'address' | 'city') => {
     setModalType(modalType);
@@ -116,61 +120,74 @@ export default function Restaurants() {
   };
 
   const handleConfirmCityModal = async () => {
-    setIsModalOpen(false);
-    if (modalType === 'city' && selectedCity) {
-      const city = Constants.DEFAULT_CITIES_OPTIONS.find(
-        (option) => option.value === selectedCity
-      )?.label;
-      if (!city) {
-        alert('Cidade nao encontrada. Tente novamente.');
-        return;
+    try {
+      setShowLoading(true);
+      setIsModalOpen(false);
+      if (modalType === 'city' && selectedCity) {
+        const city = Constants.DEFAULT_CITIES_OPTIONS.find(
+          (option) => option.value === selectedCity
+        )?.label;
+        if (!city) {
+          alert('Cidade nao encontrada. Tente novamente.');
+          return;
+        }
+        await getLocationDetailsByCity(city);
+        setSelectedCity(selectedCity);
+        router.replace(`/restaurants/${selectedCity}`);
       }
-      await getLocationDetailsByCity(city);
-      setSelectedCity(selectedCity);
-      router.push(`/restaurants/${selectedCity}`);
+      handleConfirmAddressModalType();
+    } catch (error) {
+      console.error('Error confirming city:', error);
+    } finally {
+      setShowLoading(false);
     }
-    handleConfirmAddressModalType();
   };
 
   const handleConfirmAddressModalType = () => {
-    closeModal();
-    if (modalType === 'address' && input) {
-      const { streetAddress, latitude, longitude, city } = input;
-      const selectedCity = Constants.DEFAULT_CITIES_OPTIONS.find(
-        (option) => option.label === city
-      )?.value;
-      if (!selectedCity) {
-        alert(
-          'O endereco selecionado nao é uma cidade participante. Volte e tente novamente com outro endereco.'
+    try {
+      setShowLoading(true);
+      closeModal();
+      if (modalType === 'address' && input) {
+        const { streetAddress, latitude, longitude, city } = input;
+        const selectedCity = Constants.DEFAULT_CITIES_OPTIONS.find(
+          (option) => option.label === city
+        )?.value;
+        if (!selectedCity) {
+          alert(
+            'O endereco selecionado nao é uma cidade participante. Volte e tente novamente com outro endereco.'
+          );
+          setInput({});
+          openModal('address');
+          return;
+        }
+        if (!latitude || !longitude || !selectedCity) {
+          alert('Nao foi possivel prosseguir. Volte e tente novamente.');
+          return;
+        }
+        setSelectedLocation({ latitude, longitude });
+        setSelectedCity(selectedCity);
+        router.replace(
+          `/restaurants/${selectedCity}${streetAddress ? `?streetAddress=${streetAddress}` : ''}`
         );
-        setInput({});
-        openModal('address');
-        return;
       }
-      if (!latitude || !longitude || !selectedCity) {
-        alert('Nao foi possivel prosseguir. Volte e tente novamente.');
-        return;
-      }
-      setSelectedLocation({ latitude, longitude });
-      setSelectedCity(selectedCity);
-      router.push(
-        `/restaurants/${selectedCity}${streetAddress ? `?streetAddress=${streetAddress}` : ''}`
-      );
+    } catch (error) {
+      console.error('Error getting current location:', error);
+    } finally {
+      setShowLoading(false);
     }
   };
 
   const onClickCurrentLocation = async () => {
     try {
+      setShowLoading(true);
       handleLocationPermission();
-      if (!selectedLocation) {
-        return;
-      }
 
       const locationInfo = await getLocationDetails();
       if (!locationInfo) {
         alert('Nao foi possivel obter a sua localizacao. Tente novamente.');
         return;
       }
+
       setAddressTerm(locationInfo.formattedFullAddress ?? locationInfo?.streetAddress ?? '');
       setInput((values) => ({
         ...values,
@@ -185,6 +202,8 @@ export default function Restaurants() {
       }));
     } catch (error) {
       console.error('Error getting current location:', error);
+    } finally {
+      setShowLoading(false);
     }
   };
 
@@ -199,9 +218,9 @@ export default function Restaurants() {
   };
 
   return (
-    <NavigationLayout>
+    <NavigationLayout showLoading={showLoading}>
       <div className="flex flex-col md:flex-row flex-wrap md:items-stretch items-center justify-center py-4 shadow-lg gap-8">
-        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full border rounded-lg shadow-sm bg-gray-800 border-gray-700">
           <div className="h-1/2 rounded-t-lg">
             <Image src={restaurantInMap} width={1024} height={1024} alt="Resturants in map" />
           </div>
@@ -223,7 +242,7 @@ export default function Restaurants() {
           </div>
         </div>
 
-        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-11/12 md:max-5/12 lg:max-w-1/3 h-full border rounded-lg shadow-sm bg-gray-800 border-gray-700">
           <div className="h-1/2 rounded-t-lg">
             <Image src={restaurantInStreet} width={1024} height={1024} alt="Resturants in map" />
           </div>
@@ -284,6 +303,8 @@ export default function Restaurants() {
                 onChange={(e) => {
                   if (e.target.value.length === 0) {
                     setInput({});
+                    closeModal();
+                    openModal(modalType);
                   }
                   setAddressTerm(e.target.value);
                 }}
@@ -297,7 +318,6 @@ export default function Restaurants() {
                 </span>
                 <button
                   type="button"
-                  disabled={input?.city?.length === 0}
                   onClick={onClickCurrentLocation}
                   className="min-w-10 min-h-10 inline-flex items-center justify-end-safe gap-2 p-2 font-light text-[0.9rem] text-center text-white bg-amber-500/95 rounded-lg hover:bg-amber-500/55 focus:ring-4 focus:outline-none focus:ring-amber-300 cursor-pointer">
                   <LocateFixed className="max-h-1/2" />
