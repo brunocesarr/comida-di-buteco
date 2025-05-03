@@ -85,6 +85,7 @@ function BlurGalleryItem({ restaurant }: { restaurant: RestaurantInfoResponse })
           alt={restaurant.name}
           src={restaurant.image ?? ''}
           fill={true}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{ objectFit: 'cover' }}
           className={cn(
             'duration-700 ease-in-out group-hover:opacity-75 w-xs rounded-lg"',

@@ -71,9 +71,9 @@ export default function RestaurantsByCityPage() {
           {Array.from({ length: 7 }, (_, index) => index).map((value) => {
             return (
               <div key={value} className="animate-pulse flex items-center flex-col gap-4">
-                <div className="flex items-center justify-center w-full h-48 bg-gray-300 rounded-sm dark:bg-gray-700">
+                <div className="flex items-center justify-center w-full h-48 rounded-sm bg-gray-700">
                   <svg
-                    className="w-full h-10 text-gray-200 dark:text-gray-600"
+                    className="w-full h-10 text-gray-600"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
@@ -82,11 +82,11 @@ export default function RestaurantsByCityPage() {
                   </svg>
                 </div>
                 <div className="w-full">
-                  <div className="h-4 bg-gray-200 rounded-full dark:bg-gray-700 w-xs mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
-                  <div className="h-4 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+                  <div className="h-4 rounded-full bg-gray-700 w-xs mb-4"></div>
+                  <div className="h-4 rounded-full bg-gray-700 mb-2.5"></div>
+                  <div className="h-4 rounded-full bg-gray-700 mb-2.5"></div>
                   <div className="flex justify-end right-0 h-2">
-                    <div className="content-end right-0 w-24 h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[60px]"></div>
+                    <div className="content-end right-0 w-24 h-2 rounded-full bg-gray-700 max-w-[60px]"></div>
                   </div>
                 </div>
                 <span className="sr-only">Loading...</span>

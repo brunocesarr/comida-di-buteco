@@ -29,12 +29,11 @@ export function Modal({ title, isOpen, onClose, children }: ModalProps) {
     <div
       onClick={onClose}
       onKeyDown={handleClose}
-      tabIndex={0}
-      className="fixed inset-0 bg-black/45 flex justify-center items-center z-50 text-black transition-all transition-discrete delay-150 duration-700 ease-in-out">
+      className="fixed inset-0 bg-black/45 flex justify-center items-center z-50 text-black transition-all transition-discrete delay-150 duration-700 ease-in-out overscroll-none">
       <div
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleClose}
-        className="bg-white p-4 rounded shadow-lg relative max-w-full min-w-sm overflow-auto">
+        className="relative object-center bg-white p-4 rounded shadow-lg max-w-full min-w-sm overflow-auto h-fit">
         <button
           onClick={onClose}
           className="min-w-10 min-h-10 absolute top-2 right-2 text-xl font-bold text-red-600 hover:bg-red-100 rounded-full cursor-pointer">

@@ -1,19 +1,19 @@
 import { Constants } from '@/configs';
 import { useLocationUser } from '@/contexts';
-import { LogIn, Settings2, UserRoundPlus } from 'lucide-react';
+import { LogIn, Settings2, UserRoundPlus, LucideMenu } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ActiveLink } from '@/components';
+import { ActiveLink, Dropdown, DropdownItem } from '@/components';
 
 export function NavigationBar() {
   const { selectedCity, setSelectedCity } = useLocationUser();
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <header className="bg-black/75 max-h-32 w-[100vw] grid text-center items-center px-8 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white">
+    <header className="bg-black/75 max-h-32 w-[100vw] grid text-center items-center px-8 py-2 md:py-4 font-sans lg:py-0 lg:px-28 bg-cover bg-center bg-no-repeat text-white">
       <nav className="flex justify-between items-center md:flex">
-        <div className="hidden d-flex justify-center items-center gap-4 lg:flex">
+        <div className="hidden d-flex justify-center items-center gap-4 lg:flex py-2">
           <Link href="/">
             <Image
               alt="Comida Di Buteco Logo"
@@ -29,17 +29,34 @@ export function NavigationBar() {
           </ul>
         </div>
 
-        <details className="dropdown lg:hidden text-left text-white mb-4">
-          <summary className="btn m-1 bg-inherit border-none"></summary>
-          <ul className="dropdown-content menu p-2 shadow bg-base-100 rounded-box max-w-64 px-4 flex flex-col gap-3 md:hidden bg-black/75">
-            <ActiveLink path="/restaurants" title="Restaurantes" />
-            <ActiveLink path="/about" title="Sobre" />
-          </ul>
-          <ul className="hidden md:flex dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 px-4 md:flex-col gap-3">
-            <ActiveLink path="/restaurants" title="Restaurantes" />
-            <ActiveLink path="/about" title="Sobre" />
-          </ul>
-        </details>
+        <div className="lg:hidden w-full flex flex-row justify-between items-center gap-4">
+          <Link href="/">
+            <Image
+              alt="Comida Di Buteco Logo"
+              src="https://cdb-static-files.s3.amazonaws.com/wp-content/uploads/2022/03/25112702/logo-comida-di-buteco.webp"
+              width={100}
+              height={100}
+              style={{ objectFit: 'contain' }}
+            />
+          </Link>
+
+          <Dropdown
+            trigger={
+              <button
+                type="button"
+                className="cursor-pointer overflow-hidden min-w-10 min-h-10 rounded-lg border border-gray-700 shadow-inner items-center justify-center flex">
+                <span className="sr-only">Toggle menu</span>
+                <LucideMenu className="size-6 object-fill text-gray-50/90 font-thin" />
+              </button>
+            }>
+            <DropdownItem>
+              <ActiveLink path="/restaurants" title="Restaurantes" />
+            </DropdownItem>
+            <DropdownItem>
+              <ActiveLink path="/about" title="Sobre" />
+            </DropdownItem>
+          </Dropdown>
+        </div>
 
         <div className="hidden md:relative md:block">
           <div className="flex items-center justify-center gap-4">
